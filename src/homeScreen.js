@@ -10,10 +10,12 @@ import {
   AppState
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { WebView } from 'react-native-webview';
 
 const sampleUrl = "https://filesamples.com/samples/document/doc/sample2.doc";
-
 // const sampleUrl = "https://file-examples-com.github.io/uploads/2017/10/file-example_PDF_1MB.pdf";
+
+
 let pdfRed;
 
 const onPressHold = (props) => {
@@ -34,7 +36,6 @@ const onDownload = (props) =>{
 }
 const reloadPDF = async () => {
   //Alert.alert("onDownload 11111.................");
-
   if (!pdfRed) {
     return;
   }
@@ -50,7 +51,9 @@ const reloadPDF = async () => {
 function HomeScreen (props) {
 
   const appState = useRef(AppState.currentState);
+  const [webviewLoading, setwebViewLoading] = useState(true);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
+  const resourceType = 'file';
 
   useFocusEffect(
     React.useCallback(() => {
@@ -65,38 +68,58 @@ function HomeScreen (props) {
 
 
   return  (
+  //   <WebView
+  //   source={{
+  //      uri : "http://drive.google.com/viewerng/viewer?embedded=true&url="+sampleUrl
+     
+  //   }}
+  //   startInLoadingState={true}
+  //   cacheEnabled={false}
+  //   javaScriptEnabled={true}
+  //  />
+    
     <View style={styles.container}>
-       
-      <View>
-      <Pressable style={styles.buttontext} onPress={()=> onPressHold(props)}>
-         <Text style={styles.text}>1</Text>
-       </Pressable>
-       <Pressable style={styles.button1} onPress={()=> onPressHold1(props)}>
-         <Text style={styles.text}>2</Text>
-       </Pressable>
-       </View>
-
-       <View style={styles.pdfView}>
-       <PDFView
-          fadeInDuration={250.0}
-          style={{ flex: 1 }}
-          resource={ sampleUrl }
-          resourceType="url"
-          onPageChanged={(page,numberOfPages)=>console.log(`PDF rendered from url`+page)}
-          onLoad={(event) => console.log(`PDF rendered from url`+event)}
-          ref={(ref) => pdfRed = ref} 
-          onError={(error) => console.log('Cannot render PDF'+JSON.stringify(error))}
-        />
-       </View>
-
-       <View style={styles.bottomcontainer} >
-        <Pressable style={styles.button} onPress={()=> onView(props)}>
-         <Text style={styles.text}> View </Text>
+       <View>
+        <Pressable style={styles.buttontext} onPress={()=> onPressHold(props)}>
+          <Text style={styles.text}>1</Text>
         </Pressable>
-        <Pressable style={styles.button} onPress={() => onDownload(props)}>
-         <Text style={styles.text}> 3  </Text>
+        <Pressable style={styles.button1} onPress={()=> onPressHold1(props)}>
+          <Text style={styles.text}>2</Text>
         </Pressable>
-       </View>
+        </View>
+
+        <View style={styles.pdfView}>
+        {!sampleUrl.includes(".pdf") && (Platform.OS == "android")? 
+          <WebView
+          source={{
+            uri : "http://drive.google.com/viewerng/viewer?embedded=true&url="+sampleUrl
+          }}
+          cacheEnabled={false}
+          javaScriptEnabled={true}
+          startInLoadingState={true}
+          scalesPageToFit={true}      
+         />
+         :<PDFView
+         fadeInDuration={250.0}
+         style={{ flex: 1 }}
+         resource={sampleUrl}
+         resourceType="url"
+         onScrolled={(number) => console.log('PDF rendered from onScrolled'+number)}
+         onPageChanged={(page,numberOfPages)=>console.log(`PDF rendered from url`+page)}
+         onLoad={(event) => console.log(`PDF rendered from url`+ event)}
+         ref={(ref) => pdfRed = ref} 
+         onError={(error) => console.log('Cannot render PDF'+JSON.stringify(error))}
+         />  }
+        </View>
+
+        <View style={styles.bottomcontainer} >
+          <Pressable style={styles.button} onPress={()=> onView(props)}>
+          <Text style={styles.text}> View </Text>
+          </Pressable>
+          <Pressable style={styles.button} onPress={() => onDownload(props)}>
+          <Text style={styles.text}> 3  </Text>
+          </Pressable>
+        </View>
      </View>
   )
 }
